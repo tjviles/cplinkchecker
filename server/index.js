@@ -84,6 +84,7 @@ app.get("/api", (req, res) => {
     .catch((error) => {
         console.log("Error getting submission ID")
     })
+    res.send("endpoint reached")
 }); 
 
 
