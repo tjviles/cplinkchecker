@@ -15,40 +15,7 @@ const csvWriter = createCsvWriter({
  
 var records = [];
 
-const siteChecker = new SiteChecker(
-    { 
-        excludeInternalLinks: false,
-        excludeExternalLinks: false, 
-        filterLevel: 0,
-        acceptedSchemes: ["http", "https"],
-        excludedKeywords: ["linkedin"],
-        honorRobotExclusions: false
-    },
-    {
-        "error": (error) => {
-            console.error(error);
-        },
-        "link": (result, customData) => {
-            if(result.broken) {
-                if(result.http.response && ![undefined, 200].includes(result.http.response.statusCode)) {
-                    console.log(`${result.http.response.statusCode} => ${result.url.original}`);
-                    records.push({status: `${result.http.response.statusCode}`, url: `${result.url.original}`});
-                }
-            }
-            //else(console.log(`${result.http.response.statusCode} => ${result.url.original}`))
-            else{
-                console.log(`${result.http.response.statusCode} => ${result.url.original}`);
-            }
-        },
-        "end": () => {
-            console.log("COMPLETED!");
-            csvWriter.writeRecords(records)       // returns a promise
-                .then(() => {
-                console.log('...Done');
-    });
-        }
-    }
-);
+
 
 const CivicPlus = require ('@oneblink/sdk/tenants/civicplus')
 
@@ -61,7 +28,7 @@ const forms = new CivicPlus.Forms(options)
 
 //siteChecker.enqueue("https://www.camdensheriff.org/");
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 80;
 
 const app = express();
 app.use(cors());
@@ -71,22 +38,67 @@ app.use(bodyParser.json());
 
 
 app.get("/api", (req, res) => {
-    const formId = req.body.formId
+    const formId = 29724
     const submissionId = req.body.submissionId
+    console.log(formId)
+    console.log(submissionId)
     const isDraft = false
     forms
     .getSubmissionData(formId, submissionId, isDraft)
     .then((result) => {
         const definition = result.definition
         const submission = result.submission
-        console.log(submission)
+        console.log(submission.URL)
+
+        const siteChecker = new SiteChecker(
+            { 
+                excludeInternalLinks: false,
+                excludeExternalLinks: false, 
+                filterLevel: 0,
+                acceptedSchemes: ["http", "https"],
+                excludedKeywords: ["linkedin"],
+                honorRobotExclusions: false
+            },
+            {
+                "error": (error) => {
+                    console.error(error);
+                },
+                "link": (result, customData) => {
+                    if(result.broken) {
+                        if(result.http.response && ![undefined, 200].includes(result.http.response.statusCode)) {
+                            //console.log(`${result.http.response.statusCode} => ${result.url.original}`);
+                            console.log(result);
+                            records.push({status: `${result.http.response.statusCode}`, url: `${result.url.original}`});
+                        }
+                    }
+                    //else(console.log(`${result.http.response.statusCode} => ${result.url.original}`))
+                    else{
+                        //console.log(`${result.http.response.statusCode} => ${result.url.original}`);
+                    }
+                },
+                "end": () => {
+                    console.log("COMPLETED!");
+                    csvWriter.writeRecords(records)       // returns a promise
+                        .then(() => {
+                        console.log('...Done');
+                        res.send(records);
+                        });
+                }
+            }
+        );
+
+        siteChecker.enqueue(submission.URL)
+        
+      
     })
     .catch((error) => {
-        console.log("Error getting submission ID")
+        console.log(error)
     })
-    res.send("endpoint reached")
 }); 
 
+app.get("/", (req, res) => {
+    res.json({ message: "Hello World"  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
