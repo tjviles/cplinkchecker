@@ -37,7 +37,7 @@ app.use(bodyParser.json());
 
 
 
-app.post("/api", (req, res) => {
+/* app.post("/api", (req, res) => {
     const formId = 29724
     const submissionId = req.body.submissionId
     console.log(formId)
@@ -97,7 +97,47 @@ app.post("/api", (req, res) => {
     .catch((error) => {
         console.log(error)
     })
-}); 
+});  */
+
+app.post("/api", (req, res) => {
+    const siteChecker = new SiteChecker(
+        { 
+            excludeInternalLinks: false,
+            excludeExternalLinks: false, 
+            filterLevel: 0,
+            acceptedSchemes: ["http", "https"],
+            excludedKeywords: ["linkedin"],
+            honorRobotExclusions: false
+        },
+        {
+            "error": (error) => {
+                console.error(error);
+            },
+            "link": (result, customData) => {
+                if(result.broken) {
+                    if(result.http.response && ![undefined, 200].includes(result.http.response.statusCode)) {
+                        //console.log(`${result.http.response.statusCode} => ${result.url.original}`);
+                        console.log(result);
+                        records.push({status: `${result.http.response.statusCode}`, url: `${result.url.original}`});
+                    }
+                }
+                //else(console.log(`${result.http.response.statusCode} => ${result.url.original}`))
+                else{
+                    //console.log(`${result.http.response.statusCode} => ${result.url.original}`);
+                }
+            },
+            "end": () => {
+                console.log("COMPLETED!");
+                csvWriter.writeRecords(records)       // returns a promise
+                    .then(() => {
+                    console.log('...Done');
+                    res.send({URL: records});
+                    });
+            }
+        }
+    );
+    siteChecker.enqueue(req.body.URL)
+});
 
 app.get("/", (req, res) => {
     res.json({ message: "Hello World"  });
