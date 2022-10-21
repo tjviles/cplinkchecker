@@ -37,7 +37,7 @@ app.use(bodyParser.json());
 
 
 
-app.get("/api", (req, res) => {
+app.post("/api", (req, res) => {
     const formId = 29724
     const submissionId = req.body.submissionId
     console.log(formId)
