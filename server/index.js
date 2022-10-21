@@ -1,4 +1,6 @@
 const express = require("express");
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
 var { SiteChecker } = require("broken-link-checker");
 
@@ -62,23 +64,28 @@ const forms = new CivicPlus.Forms(options)
 const PORT = process.env.PORT || 3001;
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+
 
 app.get("/api", (req, res) => {
-    const formId = req.formId
-    const submissionId = req.submissionId
+    const formId = req.body.formId
+    const submissionId = req.body.submissionId
     const isDraft = false
     forms
-        .getSubmissionData(formId, submissionId, isDraft)
-        .then((result) => {
-            const definition = result.definition
-            const submission = result.submission
-            console.log(submission)
-        })
-        .catch((error) => {
-            // Handle error here
-            console.log("Error getting submission data")
-        })
+    .getSubmissionData(formId, submissionId, isDraft)
+    .then((result) => {
+        const definition = result.definition
+        const submission = result.submission
+        console.log(submission)
+    })
+    .catch((error) => {
+        console.log("Error getting submission ID")
+    })
 }); 
+
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
