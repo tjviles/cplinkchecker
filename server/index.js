@@ -57,13 +57,6 @@ const options = {
 
 const forms = new CivicPlus.Forms(options)
 
-const formId = 27629
-const injectForms = false
-forms.getForm(formId, injectForms).then((form) => {
-  // Use form here...
-  console.log(form.elements[0])
-})
-
 //siteChecker.enqueue("https://www.camdensheriff.org/");
 
 const PORT = process.env.PORT || 3001;
@@ -71,10 +64,20 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 app.get("/api", (req, res) => {
-    res.send({
-        id: 'drugs',
-        name: 'daniel'
-    });
+    const formId = req.formId
+    const submissionId = req.submissionId
+    const isDraft = false
+    forms
+        .getSubmissionData(formId, submissionId, isDraft)
+        .then((result) => {
+            const definition = result.definition
+            const submission = result.submission
+            console.log(submission)
+        })
+        .catch((error) => {
+            // Handle error here
+            console.log("Error getting submission data")
+        })
 }); 
 
 app.listen(PORT, () => {
