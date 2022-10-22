@@ -146,7 +146,7 @@ app.post("/api", (req, res) => {
                               contentType: 'csv',
                               fileName: imageFileName,
                             })
-                            res.send({file_attachment_url: fileResult.url
+                            res.send({badlinks: fileResult.url
                             });
                         }
                         run();
