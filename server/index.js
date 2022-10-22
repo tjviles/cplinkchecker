@@ -131,7 +131,7 @@ app.post("/api", (req, res) => {
                 csvWriter.writeRecords(records)       // returns a promise
                     .then(() => {
                     console.log('...Done');
-                    res.send({badlinks: records[0]});
+                    res.send({badlinks: records[0].url});
                     });
             }
         }
