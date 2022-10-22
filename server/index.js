@@ -136,7 +136,7 @@ app.post("/api", (req, res) => {
             }
         }
     );
-    siteChecker.enqueue(req.body.URL)
+    siteChecker.enqueue(req.body.submission.URL)
 });
 
 app.get("/", (req, res) => {
