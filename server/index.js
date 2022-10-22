@@ -1,6 +1,10 @@
 const express = require("express");
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const fs = require('fs')
+const util = require('util')
+
+const readFileAsync = util.promisify(fs.readFile)
 
 var { SiteChecker } = require("broken-link-checker");
 
@@ -130,8 +134,24 @@ app.post("/api", (req, res) => {
                 console.log("COMPLETED!");
                 csvWriter.writeRecords(records)       // returns a promise
                     .then(() => {
-                    console.log('...Done');
-                    res.send({badlinks: records[0].url});
+                        console.log('...Done');
+                        async function run() {
+                            const formId = 29724
+                            const imageFileName = 'linkcheck.csv'
+                            const imageBuffer = await readFileAsync(imageFileName)
+                            const fileResult = await forms.createSubmissionAttachment({
+                              formId,
+                              body: imageBuffer,
+                              isPrivate: false,
+                              contentType: 'csv',
+                              fileName: imageFileName,
+                            })
+                            res.send({badlinks: records[0].url,
+                                file_attachment_url: fileResult.url
+                            });
+                        }
+                        run();
+                        
                     });
             }
         }
